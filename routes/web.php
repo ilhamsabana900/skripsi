@@ -20,5 +20,6 @@ Route::get('/', [CrudController::class, 'dashboard']);
 
 Route::get('/dashboard', [CrudController::class, 'dashboard'])->name('dashboard');
 Route::resource('siswa', SiswaController::class);
+Route::post('siswa/import', [SiswaController::class, 'importExcel'])->name('siswa.import');
 Route::resource('guru', GuruController::class);
 

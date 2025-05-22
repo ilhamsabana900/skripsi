@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Siswa;
 use App\Models\Kelas;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\SiswaImport;
 
 class SiswaController extends Controller
 {
@@ -27,7 +29,7 @@ class SiswaController extends Controller
             ->orWhere('nis', 'like', "%$q%")
             ->orWhere('no_hp', 'like', "%$q%") ;
         }
-        $siswas = $query->get();
+        $siswas = $query->paginate(10); // pagination 10 per halaman
         return view('siswa.index', compact('siswas'));
     }
 
@@ -112,5 +114,15 @@ class SiswaController extends Controller
     {
         Siswa::destroy($id);
         return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil dihapus.');
+    }
+
+    // Tambahkan method untuk import excel
+    public function importExcel(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv',
+        ]);
+        Excel::import(new SiswaImport, $request->file('file'));
+        return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil diimport.');
     }
 }
