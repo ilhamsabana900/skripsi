@@ -67,8 +67,20 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-dark" href="#">
-            <i class="material-symbols-rounded opacity-5">receipt_long</i>
+          <a class="nav-link {{ request()->routeIs('kelas.*') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('kelas.index') }}">
+            <i class="material-symbols-rounded opacity-5">groups</i>
+            <span class="nav-link-text ms-1">Data Kelas</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {{ (request()->routeIs('nilai.massal')) ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('nilai.massal') }}">
+            <i class="material-symbols-rounded opacity-5">playlist_add_check_circle</i>
+            <span class="nav-link-text ms-1">Input Nilai Massal</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {{ (request()->routeIs('nilai.index') || request()->routeIs('nilai.create') || request()->routeIs('nilai.edit') || request()->routeIs('nilai.show') || request()->routeIs('nilai.rekap')) ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('nilai.index') }}">
+            <i class="material-symbols-rounded opacity-5">grading</i>
             <span class="nav-link-text ms-1">Nilai</span>
           </a>
         </li>        
