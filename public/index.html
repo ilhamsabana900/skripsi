@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Data Sekolah</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h2 { margin-top: 40px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background: #f0f0f0; }
+        form { margin-bottom: 20px; }
+        input, select { margin: 4px 0; padding: 6px; }
+        .actions button { margin-right: 4px; }
+        .section { border: 1px solid #ddd; padding: 16px; border-radius: 8px; margin-bottom: 32px; }
+    </style>
+</head>
+<body>
+    <h1>CRUD Data Sekolah</h1>
+    <div id="app"></div>
+    <script>
+        // Daftar model dan endpoint
+        const models = [
+            { name: 'Admin', fields: ['nama', 'email', 'password', 'user_id'] },
+            { name: 'Guru', fields: ['nama', 'email', 'mapel_id', 'user_id', 'nip'] },
+            { name: 'Kelas', fields: ['nama_kelas'] },
+            { name: 'Mapel', fields: ['nama_mapel'] },
+            { name: 'Nilai', fields: ['siswa_id', 'mapel_id', 'nilai'] },
+            { name: 'Siswa', fields: ['nama', 'email', 'kelas_id', 'user_id'] },
+            { name: 'User', fields: ['username', 'role', 'nama', 'email', 'kelas_id', 'password'] },
+        ];
+        const apiBase = '/api/';
+
+        function createSection(model) {
+            const section = document.createElement('div');
+            section.className = 'section';
+            section.innerHTML = `<h2>${model.name}</h2>`;
+            // Form
+            const form = document.createElement('form');
+            form.id = `form-${model.name}`;
+            model.fields.forEach(f => {
+                form.innerHTML += `<label>${f}: <input name="${f}" required></label><br>`;
+            });
+            form.innerHTML += `<button type="submit">Tambah ${model.name}</button>`;
+            section.appendChild(form);
+            // Table
+            const table = document.createElement('table');
+            table.id = `table-${model.name}`;
+            section.appendChild(table);
+            // Event
+            form.onsubmit = async e => {
+                e.preventDefault();
+                const data = {};
+                model.fields.forEach(f => data[f] = form[f].value);
+                await fetch(apiBase + model.name.toLowerCase(), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                form.reset();
+                loadData(model);
+            };
+            return section;
+        }
+
+        async function loadData(model) {
+            const table = document.getElementById(`table-${model.name}`);
+            const res = await fetch(apiBase + model.name.toLowerCase());
+            const data = await res.json();
+            let html = '<tr>';
+            if (data.length > 0) {
+                Object.keys(data[0]).forEach(k => html += `<th>${k}</th>`);
+            }
+            html += '<th>Aksi</th></tr>';
+            data.forEach(row => {
+                html += '<tr>';
+                Object.values(row).forEach(v => html += `<td>${v}</td>`);
+                html += `<td class="actions">
+                    <button onclick="editRow('${model.name}', ${row.id})">Edit</button>
+                    <button onclick="deleteRow('${model.name}', ${row.id})">Hapus</button>
+                </td></tr>`;
+            });
+            table.innerHTML = html;
+        }
+
+        window.editRow = async (modelName, id) => {
+            const model = models.find(m => m.name === modelName);
+            const res = await fetch(apiBase + modelName.toLowerCase() + '/' + id);
+            const data = await res.json();
+            const form = document.getElementById('form-' + modelName);
+            model.fields.forEach(f => { form[f].value = data[f] ?? ''; });
+            form.onsubmit = async e => {
+                e.preventDefault();
+                const update = {};
+                model.fields.forEach(f => update[f] = form[f].value);
+                await fetch(apiBase + modelName.toLowerCase() + '/' + id, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(update)
+                });
+                form.reset();
+                form.onsubmit = defaultSubmit(model);
+                loadData(model);
+            };
+        };
+
+        window.deleteRow = async (modelName, id) => {
+            const model = models.find(m => m.name === modelName);
+            await fetch(apiBase + modelName.toLowerCase() + '/' + id, { method: 'DELETE' });
+            loadData(model);
+        };
+
+        function defaultSubmit(model) {
+            return async function(e) {
+                e.preventDefault();
+                const data = {};
+                model.fields.forEach(f => data[f] = this[f].value);
+                await fetch(apiBase + model.name.toLowerCase(), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                this.reset();
+                loadData(model);
+            };
+        }
+
+        // Render semua section
+        const app = document.getElementById('app');
+        models.forEach(model => {
+            const section = createSection(model);
+            app.appendChild(section);
+            loadData(model);
+        });
+    </script>
+</body>
+</html>
