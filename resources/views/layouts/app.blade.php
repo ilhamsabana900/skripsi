@@ -100,9 +100,18 @@
         </nav>
         
             <li class="nav-item d-flex align-items-center">
-              <a href="../pages/sign-in.html" class="nav-link text-body font-weight-bold px-0">
-                <i class="material-symbols-rounded">account_circle</i>
-              </a>
+                @auth
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="nav-link text-body font-weight-bold px-0 bg-transparent border-0">
+                        <i class="material-symbols-rounded">logout</i> Logout
+                    </button>
+                </form>
+                @else
+                <a href="{{ route('login') }}" class="nav-link text-body font-weight-bold px-0">
+                    <i class="material-symbols-rounded">account_circle</i> Login
+                </a>
+                @endauth
             </li>
           </ul>
         </div>
