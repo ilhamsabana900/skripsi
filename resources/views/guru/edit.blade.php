@@ -25,6 +25,10 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="mb-3">
+                            <label for="nip" class="form-label">NIP</label>
+                            <input type="text" class="form-control" id="nip" name="nip" value="{{ $guru->nip }}" required>
+                        </div>
                         <button type="submit" class="btn btn-primary">Simpan</button>
                         <a href="{{ route('guru.index') }}" class="btn btn-secondary">Batal</a>
                     </form>

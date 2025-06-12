@@ -58,7 +58,7 @@ class SiswaController extends Controller
             'nama' => $request->nama,
             'username' => $request->nis,
             'role' => 'siswa',
-            'password' => bcrypt('password'), // default password
+            'password' => $request->nis . 'MAN', // plain text password
         ]);
         // Buat siswa baru
         Siswa::create([

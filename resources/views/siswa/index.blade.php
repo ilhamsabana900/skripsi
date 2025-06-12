@@ -38,6 +38,8 @@
                                 <th>Kelas</th>
                                 <th>NIS</th>
                                 <th>No HP</th>
+                                <th>Username</th>
+                                <th>Password Default</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -49,6 +51,8 @@
                                 <td>{{ $siswa->kelas->nama_kelas ?? '-' }}</td>
                                 <td>{{ $siswa->nis ?? '-' }}</td>
                                 <td>{{ $siswa->no_hp ?? '-' }}</td>
+                                <td>{{ $siswa->nis }}</td>
+                                <td>{{ $siswa->nis }}MAN</td>
                                 <td>
                                     <a href="{{ route('siswa.edit', $siswa->id) }}" class="btn btn-warning btn-sm">Edit</a>
                                     <form action="{{ route('siswa.destroy', $siswa->id) }}" method="POST" style="display:inline-block;">

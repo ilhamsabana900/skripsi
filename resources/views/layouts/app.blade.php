@@ -84,6 +84,12 @@
             <span class="nav-link-text ms-1">Nilai</span>
           </a>
         </li>        
+        <li class="nav-item">
+          <a class="nav-link {{ request()->routeIs('mapel.*') ? 'active bg-gradient-dark text-white' : 'text-dark' }}" href="{{ route('mapel.index') }}">
+            <i class="material-symbols-rounded opacity-5">menu_book</i>
+            <span class="nav-link-text ms-1">Data Mapel</span>
+          </a>
+        </li>
       </ul>
     </div>
     

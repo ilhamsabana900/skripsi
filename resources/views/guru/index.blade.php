@@ -28,6 +28,7 @@
                         <thead>
                             <tr>
                                 <th>No.</th>
+                                <th>NIP</th>
                                 <th>Nama</th>
                                 <th>Email</th>
                                 <th>Mapel</th>
@@ -38,6 +39,7 @@
                             @foreach($gurus as $guru)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
+                                <td>{{ $guru->nip }}</td>
                                 <td>{{ $guru->nama }}</td>
                                 <td>{{ $guru->email }}</td>
                                 <td>{{ $guru->mapel->nama_mapel ?? '-' }}</td>

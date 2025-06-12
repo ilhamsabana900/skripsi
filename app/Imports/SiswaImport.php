@@ -18,25 +18,25 @@ class SiswaImport implements ToModel
     */
     public function model(array $row)
     {
-        // Asumsi urutan kolom: nama, nis, no_hp, kelas (nama kelas)
-        $kelas = Kelas::where('nama_kelas', $row[3])->first();
-        // Buat user baru untuk siswa jika belum ada
-        $email = $row[1].'@siswa.com'; // email dari NIS
+        // Cek apakah user sudah ada berdasarkan NIS
         $user = User::firstOrCreate(
-            ['email' => $email],
+            ['username' => $row['nis']],
             [
-                'nama' => $row[0], // ganti 'name' jadi 'nama'
-                'username' => $row[1], // tambahkan username dari NIS
-                'password' => bcrypt('password123'), // password default
+                'nama' => $row['nama'],
+                'username' => $row['nis'],
                 'role' => 'siswa',
+                'password' => $row['nis'] . 'MAN', // plain text password
             ]
         );
-        return new Siswa([
-            'nama' => $row[0],
-            'nis' => $row[1],
-            'no_hp' => $row[2],
-            'kelas_id' => $kelas ? $kelas->id : null,
-            'user_id' => $user->id,
-        ]);
+
+        // Cek apakah siswa sudah ada berdasarkan user_id
+        return Siswa::firstOrCreate(
+            ['user_id' => $user->id],
+            [
+                'kelas_id' => $row['kelas_id'],
+                'nis' => $row['nis'],
+                'no_hp' => $row['no_hp'] ?? null,
+            ]
+        );
     }
 }

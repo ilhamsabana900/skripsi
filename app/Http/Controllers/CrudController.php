@@ -49,12 +49,48 @@ class CrudController extends Controller
     }
     public function storeGuru(Request $request)
     {
-        return Guru::create($request->all());
+        $request->validate([
+            'nip' => 'required|string|unique:gurus,nip',
+            'nama' => 'required|string|max:255',
+            'mapel_id' => 'required|exists:mapels,id',
+        ]);
+        $guru = Guru::create([
+            'nip' => $request->nip,
+            'nama' => $request->nama,
+            'email' => $request->email,
+            'mapel_id' => $request->mapel_id,
+        ]);
+        // Buat user login untuk guru
+        \App\Models\User::create([
+            'username' => $request->nip,
+            'password' => $request->nip . 'MAN', // plain text sesuai permintaan
+            'role' => 'guru',
+            'guru_id' => $guru->id,
+        ]);
+        return $guru;
     }
     public function updateGuru(Request $request, $id)
     {
         $guru = Guru::findOrFail($id);
-        $guru->update($request->all());
+        $request->validate([
+            'nip' => 'required|string|unique:gurus,nip,' . $id,
+            'nama' => 'required|string|max:255',
+            'mapel_id' => 'required|exists:mapels,id',
+        ]);
+        $guru->update([
+            'nip' => $request->nip,
+            'nama' => $request->nama,
+            'email' => $request->email,
+            'mapel_id' => $request->mapel_id,
+        ]);
+        // Update user login jika ada
+        $user = \App\Models\User::where('guru_id', $guru->id)->first();
+        if ($user) {
+            $user->update([
+                'username' => $request->nip,
+                'password' => $request->nip . 'MAN', // plain text
+            ]);
+        }
         return $guru;
     }
     public function destroyGuru($id)
@@ -195,5 +231,37 @@ class CrudController extends Controller
         $jumlahGuru = \App\Models\Guru::count();
         $jumlahKelas = \App\Models\Kelas::count();
         return view('dashboard', compact('jumlahSiswa', 'jumlahGuru', 'jumlahKelas'));
+    }
+
+    // CRUD untuk Mapel (web views)
+    public function createMapel() {
+        return view('mapel.create');
+    }
+    public function editMapel($id) {
+        $mapel = Mapel::findOrFail($id);
+        return view('mapel.edit', compact('mapel'));
+    }
+    public function indexMapelWeb() {
+        $mapels = Mapel::paginate(10);
+        return view('mapel.index', compact('mapels'));
+    }
+    public function storeMapelWeb(Request $request) {
+        $request->validate([
+            'nama_mapel' => 'required|string|max:255',
+        ]);
+        Mapel::create($request->only(['nama_mapel']));
+        return redirect()->route('mapel.index')->with('success', 'Mapel berhasil ditambahkan.');
+    }
+    public function updateMapelWeb(Request $request, $id) {
+        $mapel = Mapel::findOrFail($id);
+        $request->validate([
+            'nama_mapel' => 'required|string|max:255',
+        ]);
+        $mapel->update($request->only(['nama_mapel']));
+        return redirect()->route('mapel.index')->with('success', 'Mapel berhasil diupdate.');
+    }
+    public function destroyMapelWeb($id) {
+        Mapel::destroy($id);
+        return redirect()->route('mapel.index')->with('success', 'Mapel berhasil dihapus.');
     }
 }

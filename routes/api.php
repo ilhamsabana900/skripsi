@@ -67,3 +67,6 @@ Route::get('user/{id}', [CrudController::class, 'showUser']);
 Route::post('user', [CrudController::class, 'storeUser']);
 Route::put('user/{id}', [CrudController::class, 'updateUser']);
 Route::delete('user/{id}', [CrudController::class, 'destroyUser']);
+
+// Login
+Route::post('login', [App\Http\Controllers\AuthController::class, 'login']);

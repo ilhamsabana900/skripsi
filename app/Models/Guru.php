@@ -10,7 +10,7 @@ class Guru extends Model
     use HasFactory;
     protected $table = 'gurus';
 
-    protected $fillable = ['nama', 'email', 'mapel_id'];
+    protected $fillable = ['nip', 'nama', 'email', 'mapel_id'];
 
     // Relasi ke mapel (gunakan nama mapel, tapi tetap sediakan alias lama untuk backward compatibility)
     public function mapel()

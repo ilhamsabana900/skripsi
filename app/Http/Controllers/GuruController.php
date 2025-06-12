@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Guru;
 use App\Models\Mapel;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class GuruController extends Controller
 {
@@ -32,11 +34,20 @@ class GuruController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'nip' => 'required',
             'nama' => 'required|string|max:255',
             'email' => 'required|email|unique:gurus,email',
             'mapel_id' => 'required|exists:mapels,id',
         ]);
-        Guru::create($request->only(['nama', 'email', 'mapel_id']));
+        $guru = Guru::create($request->only(['nip','nama', 'email', 'mapel_id']));
+        // Tambahkan user baru untuk guru
+        User::create([
+            'username' => $request->nip,
+            'nama' => $request->nama,
+            'email' => $request->email,
+            'role' => 'guru',
+            'password' =>$request->nip . 'MAN', // password default nip
+        ]);
         return redirect()->route('guru.index')->with('success', 'Data guru berhasil ditambahkan.');
     }
 
@@ -51,11 +62,12 @@ class GuruController extends Controller
     {
         $guru = Guru::findOrFail($id);
         $request->validate([
+             'nip' => 'required',
             'nama' => 'required|string|max:255',
             'email' => 'required|email|unique:gurus,email,' . $id,
             'mapel_id' => 'required|exists:mapels,id',
         ]);
-        $guru->update($request->only(['nama', 'email', 'mapel_id']));
+        $guru->update($request->only(['nip','nama', 'email', 'mapel_id']));
         return redirect()->route('guru.index')->with('success', 'Data guru berhasil diupdate.');
     }
 

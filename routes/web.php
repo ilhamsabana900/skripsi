@@ -34,5 +34,13 @@ Route::middleware('auth')->group(function () {
     Route::post('nilai/massal-store', [NilaiController::class, 'storeMassal'])->name('nilai.massal.store');
     Route::get('nilai/rekap', [NilaiController::class, 'rekap'])->name('nilai.rekap');
     Route::resource('nilai', NilaiController::class);
+
+    // Mapel web CRUD
+    Route::get('mapel', [CrudController::class, 'indexMapelWeb'])->name('mapel.index');
+    Route::get('mapel/create', [CrudController::class, 'createMapel'])->name('mapel.create');
+    Route::post('mapel', [CrudController::class, 'storeMapelWeb'])->name('mapel.store');
+    Route::get('mapel/{id}/edit', [CrudController::class, 'editMapel'])->name('mapel.edit');
+    Route::put('mapel/{id}', [CrudController::class, 'updateMapelWeb'])->name('mapel.update');
+    Route::delete('mapel/{id}', [CrudController::class, 'destroyMapelWeb'])->name('mapel.destroy');
 });
 
