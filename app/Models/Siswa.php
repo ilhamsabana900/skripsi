@@ -23,4 +23,19 @@ class Siswa extends Model
     {
         return $this->belongsTo(Kelas::class);
     }
+
+    // Relasi ke model Nilai
+    public function nilai()
+    {
+        return $this->hasMany(Nilai::class);
+    }
+
+    // Metode untuk menghitung nilai akumulasi
+    public function nilaiAkumulasi()
+    {
+        $totalNilai = $this->nilai()->sum('nilai');
+        $jumlahPenilaian = $this->nilai()->count();
+
+        return $jumlahPenilaian > 0 ? $totalNilai / $jumlahPenilaian : 0;
+    }
 }

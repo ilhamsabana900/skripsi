@@ -150,9 +150,29 @@ class CrudController extends Controller
     }
 
     // CRUD untuk Nilai
-    public function indexNilai()
+    public function indexNilai(Request $request)
     {
-        return Nilai::all();
+        $query = \App\Models\Nilai::with(['siswa.user', 'mapel', 'kelas']);
+        if ($request->has('kelas_id')) {
+            $query->where('kelas_id', $request->kelas_id);
+        }
+        if ($request->has('mapel_id')) {
+            $query->where('mapel_id', $request->mapel_id);
+        }
+        if ($request->filled('nis')) {
+            $nis = $request->nis;
+            $query->whereHas('siswa.user', function($u) use ($nis) {
+                $u->where('nis', $nis);
+            });
+        }
+        if ($request->filled('q')) {
+            $q = $request->q;
+            $query->whereHas('siswa.user', function($u) use ($q) {
+                $u->where('nama', 'like', "%$q%")
+                  ->orWhere('nis', 'like', "%$q%") ;
+            });
+        }
+        return $query->get();
     }
     public function showNilai($id)
     {
@@ -175,9 +195,13 @@ class CrudController extends Controller
     }
 
     // CRUD untuk Siswa
-    public function indexSiswa()
+    public function indexSiswa(Request $request)
     {
-        return Siswa::all();
+        if ($request->has('kelas_id')) {
+            $kelasId = $request->query('kelas_id');
+            return Siswa::where('kelas_id', $kelasId)->with('user')->get();
+        }
+        return Siswa::with('user')->get();
     }
     public function showSiswa($id)
     {
@@ -263,5 +287,58 @@ class CrudController extends Controller
     public function destroyMapelWeb($id) {
         Mapel::destroy($id);
         return redirect()->route('mapel.index')->with('success', 'Mapel berhasil dihapus.');
+    }
+
+    // Endpoint untuk mendapatkan nilai akumulasi siswa
+    public function nilaiAkumulasi($siswaId)
+    {
+        $siswa = Siswa::findOrFail($siswaId);
+        $nilaiAkumulasi = $siswa->nilaiAkumulasi();
+
+        return response()->json([
+            'siswa_id' => $siswa->id,
+            'nilai_akumulasi' => $nilaiAkumulasi,
+        ]);
+    }
+
+    // Endpoint untuk menghitung nilai akumulasi per mapel berdasarkan jenis nilai (harian dan ujian) dengan bobot 70% dan 30%
+    public function nilaiAkumulasiPerMapel($siswaId)
+    {
+        $siswa = Siswa::findOrFail($siswaId);
+
+        // Ambil rata-rata nilai per mapel dan jenis (harian/ujian)
+        $nilaiPerMapel = $siswa->nilai()
+            ->selectRaw('mapel_id, jenis, SUM(nilai) as total_nilai, COUNT(nilai) as jumlah_penilaian')
+            ->groupBy('mapel_id', 'jenis')
+            ->get();
+
+        $akumulasiPerMapel = [];
+
+        // Kelompokkan per mapel
+        foreach ($nilaiPerMapel->groupBy('mapel_id') as $mapelId => $nilaiGroup) {
+            $nilaiHarian = $nilaiGroup->where('jenis', 'harian')->first();
+            $nilaiUjian = $nilaiGroup->where('jenis', 'ujian')->first();
+
+            // Jika tidak ada nilai harian/ujian, anggap 0
+            $rataRataHarian = $nilaiHarian && $nilaiHarian->jumlah_penilaian > 0
+                ? $nilaiHarian->total_nilai / $nilaiHarian->jumlah_penilaian
+                : 0;
+            $rataRataUjian = $nilaiUjian && $nilaiUjian->jumlah_penilaian > 0
+                ? $nilaiUjian->total_nilai / $nilaiUjian->jumlah_penilaian
+                : 0;
+
+            // Hitung nilai akhir dengan bobot 70% harian, 30% ujian
+            $nilaiAkhir = ($rataRataHarian * 0.7) + ($rataRataUjian * 0.3);
+
+            // Masukkan ke array hasil
+            $akumulasiPerMapel[] = [
+                'mapel_id' => $mapelId,
+                'rata_rata_harian' => round($rataRataHarian, 2),
+                'rata_rata_ujian' => round($rataRataUjian, 2),
+                'nilai_akumulasi' => round($nilaiAkhir, 2),
+            ];
+        }
+
+        return response()->json($akumulasiPerMapel);
     }
 }
