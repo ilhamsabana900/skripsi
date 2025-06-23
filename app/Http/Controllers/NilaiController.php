@@ -16,9 +16,9 @@ class NilaiController extends Controller
         $query = Nilai::with(['siswa.user', 'mapel', 'kelas']);
         if ($request->filled('q')) {
             $q = $request->q;
-            $query->whereHas('siswa.user', function($u) use ($q) {
+            $query->whereHas('siswa.user', function ($u) use ($q) {
                 $u->where('nama', 'like', "%$q%")
-                  ->orWhere('nis', 'like', "%$q%") ;
+                    ->orWhere('nis', 'like', "%$q%");
             });
         }
         $nilais = $query->orderBy('tanggal', 'desc')->paginate(10);
@@ -45,7 +45,7 @@ class NilaiController extends Controller
             'jenis' => 'required|in:harian,ujian',
             'nilai' => 'required|numeric|min:0|max:100',
         ]);
-        Nilai::create($request->only(['siswa_id','mapel_id','kelas_id','guru_id','tanggal','jenis','nilai']));
+        Nilai::create($request->only(['siswa_id', 'mapel_id', 'kelas_id', 'guru_id', 'tanggal', 'jenis', 'nilai']));
         return redirect()->route('nilai.index')->with('success', 'Nilai berhasil ditambahkan.');
     }
 
@@ -62,20 +62,26 @@ class NilaiController extends Controller
             $mapel = \App\Models\Mapel::find($request->mapel_id);
             $mapel_nama = $mapel ? $mapel->nama_mapel : null;
             foreach ($siswas as $siswa) {
-                $nilai_harian = \App\Models\Nilai::where('siswa_id', $siswa->id)
+                $harianList = \App\Models\Nilai::where('siswa_id', $siswa->id)
                     ->where('mapel_id', $request->mapel_id)
                     ->where('jenis', 'harian')
-                    ->avg('nilai');
-                $nilai_ujian = \App\Models\Nilai::where('siswa_id', $siswa->id)
+                    ->pluck('nilai');
+                $ujianList = \App\Models\Nilai::where('siswa_id', $siswa->id)
                     ->where('mapel_id', $request->mapel_id)
                     ->where('jenis', 'ujian')
-                    ->avg('nilai');
-                $siswa->setAttribute('nilai_harian', $nilai_harian ? round($nilai_harian,2) : 0);
-                $siswa->setAttribute('nilai_ujian', $nilai_ujian ? round($nilai_ujian,2) : 0);
-                $siswa->setAttribute('nilai_akhir', round(($siswa->getAttribute('nilai_harian')*0.6)+($siswa->getAttribute('nilai_ujian')*0.4),2));
+                    ->pluck('nilai');
+
+                $avgHarian = $harianList->count() > 0 ? $harianList->sum() / $harianList->count() : 0;
+                $avgUjian = $ujianList->count() > 0 ? $ujianList->sum() / $ujianList->count() : 0;
+
+                $nilaiAkhir = round(($avgHarian * 0.7) + ($avgUjian * 0.3), 2);
+
+                $siswa->setAttribute('nilai_harian', $avgHarian);
+                $siswa->setAttribute('nilai_ujian', $avgUjian);
+                $siswa->setAttribute('nilai_akhir', $nilaiAkhir);
             }
         }
-        return view('nilai.rekap', compact('kelas','mapels','siswas','mapel_nama'));
+        return view('nilai.rekap', compact('kelas', 'mapels', 'siswas', 'mapel_nama'));
     }
 
     /**
@@ -168,7 +174,7 @@ class NilaiController extends Controller
             'nilai' => 'required|numeric|min:0|max:100',
         ]);
         $nilai = Nilai::findOrFail($id);
-        $nilai->update($request->only(['siswa_id','mapel_id','kelas_id','guru_id','tanggal','jenis','nilai']));
+        $nilai->update($request->only(['siswa_id', 'mapel_id', 'kelas_id', 'guru_id', 'tanggal', 'jenis', 'nilai']));
         return redirect()->route('nilai.index')->with('success', 'Nilai berhasil diupdate.');
     }
 

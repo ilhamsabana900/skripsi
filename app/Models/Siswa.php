@@ -31,11 +31,21 @@ class Siswa extends Model
     }
 
     // Metode untuk menghitung nilai akumulasi
-    public function nilaiAkumulasi()
+    public function nilaiAkumulasi($mapel_id = null)
     {
-        $totalNilai = $this->nilai()->sum('nilai');
-        $jumlahPenilaian = $this->nilai()->count();
+        $query = $this->nilai();
+        if ($mapel_id) {
+            $query->where('mapel_id', $mapel_id);
+        }
+        $harian = clone $query;
+        $ujian = clone $query;
 
-        return $jumlahPenilaian > 0 ? $totalNilai / $jumlahPenilaian : 0;
+        $harianList = $harian->where('jenis', 'harian')->pluck('nilai');
+        $ujianList = $ujian->where('jenis', 'ujian')->pluck('nilai');
+
+        $avgHarian = $harianList->count() > 0 ? $harianList->sum() / $harianList->count() : 0;
+        $avgUjian = $ujianList->count() > 0 ? $ujianList->sum() / $ujianList->count() : 0;
+
+        return round(($avgHarian * 0.7) + ($avgUjian * 0.3), 2);
     }
 }
