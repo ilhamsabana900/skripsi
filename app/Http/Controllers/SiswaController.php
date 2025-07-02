@@ -7,6 +7,7 @@ use App\Models\Siswa;
 use App\Models\Kelas;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\SiswaImport;
+use Illuminate\Support\Facades\Log;
 
 class SiswaController extends Controller
 {
@@ -124,5 +125,49 @@ class SiswaController extends Controller
         ]);
         Excel::import(new SiswaImport, $request->file('file'));
         return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil diimport.');
+    }
+
+    // Tambahkan method untuk download template import siswa (Excel/CSV)
+    public function downloadTemplateSiswa()
+    {
+        $file = public_path('template_import_siswa.xlsx');
+        if (file_exists($file)) {
+            return response()->file($file, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="template_import_siswa.xlsx"'
+            ]);
+        } else {
+            return redirect()->route('siswa.index')->with('error', 'Template tidak ditemukan');
+        }
+    }
+
+    // Hapus banyak siswa sekaligus
+    public function multiDelete(Request $request)
+    {
+        $ids = $request->ids;
+        if ($ids && is_array($ids)) {
+            $siswas = \App\Models\Siswa::whereIn('id', $ids)->get();
+            foreach ($siswas as $siswa) {
+                // Hapus semua nilai terkait siswa
+                if (method_exists($siswa, 'nilai')) {
+                    $siswa->nilai()->delete();
+                }
+                // Hapus user terkait
+                if ($siswa->user) {
+                    $siswa->user->delete();
+                }
+            }
+            // Hapus siswa setelah relasi dihapus
+            \App\Models\Siswa::whereIn('id', $ids)->delete();
+            // Jika request AJAX, balas JSON
+            if ($request->ajax()) {
+                return response()->json(['success' => true]);
+            }
+            return redirect()->route('siswa.index')->with('success', 'Data siswa terpilih berhasil dihapus.');
+        }
+        if ($request->ajax()) {
+            return response()->json(['error' => 'Tidak ada data yang dipilih.'], 400);
+        }
+        return redirect()->route('siswa.index')->with('error', 'Tidak ada data yang dipilih.');
     }
 }

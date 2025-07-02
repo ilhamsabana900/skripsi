@@ -8,8 +8,9 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class SiswaImport implements ToModel
+class SiswaImport implements ToModel, WithHeadingRow
 {
     /**
     * @param array $row
@@ -18,18 +19,19 @@ class SiswaImport implements ToModel
     */
     public function model(array $row)
     {
-        // Cek apakah user sudah ada berdasarkan NIS
+        $nama = $row['nama'] ?? $row['nama_siswa'] ?? null;
+        if (!$nama) return null; // skip baris tanpa nama
+
         $user = User::firstOrCreate(
             ['username' => $row['nis']],
             [
-                'nama' => $row['nama'],
+                'nama' => $nama,
                 'username' => $row['nis'],
                 'role' => 'siswa',
-                'password' => $row['nis'] . 'MAN', // plain text password
+                'password' => $row['nis'] . 'MAN',
             ]
         );
 
-        // Cek apakah siswa sudah ada berdasarkan user_id
         return Siswa::firstOrCreate(
             ['user_id' => $user->id],
             [

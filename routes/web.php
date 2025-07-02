@@ -28,6 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [CrudController::class, 'dashboard'])->name('dashboard');
     Route::resource('siswa', SiswaController::class);
     Route::post('siswa/import', [SiswaController::class, 'importExcel'])->name('siswa.import');
+    Route::get('/siswa/download-template', [SiswaController::class, 'downloadTemplateSiswa'])->name('siswa.downloadTemplate');
     Route::resource('guru', GuruController::class);
     Route::resource('kelas', KelasController::class);
     Route::get('nilai/massal', [NilaiController::class, 'massal'])->name('nilai.massal');
@@ -43,5 +44,6 @@ Route::middleware('auth')->group(function () {
     Route::put('mapel/{id}', [CrudController::class, 'updateMapelWeb'])->name('mapel.update');
     Route::delete('mapel/{id}', [CrudController::class, 'destroyMapelWeb'])->name('mapel.destroy');
     Route::post('admin/guru/{id}/reset-password', [GuruController::class, 'resetPassword']);
+    Route::post('siswa/multi-delete', [SiswaController::class, 'multiDelete'])->name('siswa.multiDelete');
 });
 
