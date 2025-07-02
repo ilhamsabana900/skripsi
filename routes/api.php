@@ -32,6 +32,7 @@ Route::get('guru/{id}', [CrudController::class, 'showGuru']);
 Route::post('guru', [CrudController::class, 'storeGuru']);
 Route::put('guru/{id}', [CrudController::class, 'updateGuru']);
 Route::delete('guru/{id}', [CrudController::class, 'destroyGuru']);
+Route::post('guru/{id}/change-password', [CrudController::class, 'changePasswordGuru']);
 
 // Kelas
 Route::get('kelas', [CrudController::class, 'indexKelas']);

@@ -50,6 +50,10 @@
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin menghapus?')">Hapus</button>
                                     </form>
+                                    <form action="{{ url('admin/guru/'.$guru->id.'/reset-password') }}" method="POST" style="display:inline-block; margin-top:4px;">
+                                        @csrf
+                                        <button type="submit" class="btn btn-info btn-sm" onclick="return confirm('Reset password guru ini ke default (nip+MAN)?')">Reset Password</button>
+                                    </form>
                                 </td>
                             </tr>
                             @endforeach

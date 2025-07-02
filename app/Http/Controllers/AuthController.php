@@ -49,11 +49,15 @@ class AuthController extends Controller
 
                         // Ambil siswa_id dan nis jika user adalah siswa
                         $siswa = $user->siswa; // Pastikan relasi user -> siswa sudah ada di model User
+                        $guru = $user->guru;   // Ambil relasi guru jika ada
+
+                        // Eager load relasi guru dan user
+                        $userWithRelations = User::with(['guru.user'])->find($user->id);
 
                         return response()->json([
                             'token' => $token,
                             'role' => $user->role,
-                            'user' => $user,
+                            'user' => $userWithRelations,
                             'siswa_id' => $siswa ? $siswa->id : null,
                             'nis' => $siswa ? $siswa->nis : null,
                         ]);

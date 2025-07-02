@@ -42,5 +42,6 @@ Route::middleware('auth')->group(function () {
     Route::get('mapel/{id}/edit', [CrudController::class, 'editMapel'])->name('mapel.edit');
     Route::put('mapel/{id}', [CrudController::class, 'updateMapelWeb'])->name('mapel.update');
     Route::delete('mapel/{id}', [CrudController::class, 'destroyMapelWeb'])->name('mapel.destroy');
+    Route::post('admin/guru/{id}/reset-password', [GuruController::class, 'resetPassword']);
 });
 

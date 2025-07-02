@@ -10,6 +10,7 @@ use App\Models\Mapel;
 use App\Models\Nilai;
 use App\Models\Siswa;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class CrudController extends Controller
 {
@@ -54,18 +55,21 @@ class CrudController extends Controller
             'nama' => 'required|string|max:255',
             'mapel_id' => 'required|exists:mapels,id',
         ]);
+        // Buat user dulu
+        $user = User::create([
+            'username' => $request->nip,
+            'password' => bcrypt($request->nip . 'MAN'),
+            'role' => 'guru',
+            'nama' => $request->nama,
+            'email' => $request->email,
+        ]);
+        // Buat guru dan hubungkan ke user
         $guru = Guru::create([
             'nip' => $request->nip,
             'nama' => $request->nama,
             'email' => $request->email,
             'mapel_id' => $request->mapel_id,
-        ]);
-        // Buat user login untuk guru
-        \App\Models\User::create([
-            'username' => $request->nip,
-            'password' => $request->nip . 'MAN', // plain text sesuai permintaan
-            'role' => 'guru',
-            'guru_id' => $guru->id,
+            'user_id' => $user->id,
         ]);
         return $guru;
     }
@@ -172,7 +176,8 @@ class CrudController extends Controller
                   ->orWhere('nis', 'like', "%$q%") ;
             });
         }
-        return $query->get();
+        // Urutkan berdasarkan tanggal terbaru
+        return $query->orderBy('tanggal', 'desc')->get();
     }
     public function showNilai($id)
     {
@@ -340,5 +345,27 @@ class CrudController extends Controller
         }
 
         return response()->json($akumulasiPerMapel);
+    }
+
+    // Ubah Password Guru (API)
+    public function changePasswordGuru(Request $request, $id)
+    {
+        $guru = Guru::findOrFail($id);
+        $nip = $guru->nip;
+        $user = User::where('username', $nip)->where('role', 'guru')->first();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'User guru tidak ditemukan!'], 404);
+        }
+        $request->validate([
+            'old_password' => 'required',
+            'new_password' => 'required|min:6',
+        ]);
+        // Cek password lama
+        if (!Hash::check($request->old_password, $user->password)) {
+            return response()->json(['success' => false, 'message' => 'Password lama salah!'], 400);
+        }
+        $user->password = bcrypt($request->new_password);
+        $user->save();
+        return response()->json(['success' => true, 'message' => 'Password berhasil diubah!']);
     }
 }

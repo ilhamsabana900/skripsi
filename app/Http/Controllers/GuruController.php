@@ -33,22 +33,33 @@ class GuruController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'nip' => 'required',
-            'nama' => 'required|string|max:255',
-            'email' => 'required|email|unique:gurus,email',
-            'mapel_id' => 'required|exists:mapels,id',
-        ]);
-        $guru = Guru::create($request->only(['nip','nama', 'email', 'mapel_id']));
-        // Tambahkan user baru untuk guru
-        User::create([
-            'username' => $request->nip,
-            'nama' => $request->nama,
-            'email' => $request->email,
-            'role' => 'guru',
-            'password' =>$request->nip . 'MAN', // password default nip
-        ]);
-        return redirect()->route('guru.index')->with('success', 'Data guru berhasil ditambahkan.');
+        try {
+            $request->validate([
+                'nip' => 'required',
+                'nama' => 'required|string|max:255',
+                'email' => 'required|email|unique:gurus,email',
+                'mapel_id' => 'required|exists:mapels,id',
+            ]);
+            // Buat user dulu
+            $user = User::create([
+                'username' => $request->nip,
+                'nama' => $request->nama,
+                'email' => $request->email,
+                'role' => 'guru',
+                'password' => bcrypt($request->nip . 'MAN'),
+            ]);
+            // Buat guru dan hubungkan ke user
+            $guru = Guru::create([
+                'nip' => $request->nip,
+                'nama' => $request->nama,
+                'email' => $request->email,
+                'mapel_id' => $request->mapel_id,
+                'user_id' => $user->id,
+            ]);
+            return redirect()->route('guru.index')->with('success', 'Data guru berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->withErrors(['error' => $e->getMessage()]);
+        }
     }
 
     public function edit($id)
@@ -75,5 +86,19 @@ class GuruController extends Controller
     {
         Guru::destroy($id);
         return redirect()->route('guru.index')->with('success', 'Data guru berhasil dihapus.');
+    }
+
+    public function resetPassword($id)
+    {
+        $guru = Guru::findOrFail($id);
+        $nip = $guru->nip;
+        $defaultPassword = $nip . 'MAN';
+        // Update password di tabel users (asumsi username = nip)
+        $user = User::where('username', $nip)->where('role', 'guru')->first();
+        if ($user) {
+            $user->password = bcrypt($defaultPassword);
+            $user->save();
+        }
+        return redirect()->back()->with('success', 'Password guru berhasil direset ke: ' . $defaultPassword);
     }
 }
