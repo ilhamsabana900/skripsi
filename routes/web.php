@@ -22,6 +22,7 @@ use App\Http\Controllers\AuthController;
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/siswa/download-template', [SiswaController::class, 'downloadTemplateSiswa'])->name('siswa.downloadTemplate');
 
 Route::middleware('auth')->group(function () {
     Route::get('/', [CrudController::class, 'dashboard']);
@@ -46,4 +47,3 @@ Route::middleware('auth')->group(function () {
     Route::post('admin/guru/{id}/reset-password', [GuruController::class, 'resetPassword']);
     Route::post('siswa/multi-delete', [SiswaController::class, 'multiDelete'])->name('siswa.multiDelete');
 });
-

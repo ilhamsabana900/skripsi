@@ -132,9 +132,8 @@ class SiswaController extends Controller
     {
         $file = public_path('template_import_siswa.xlsx');
         if (file_exists($file)) {
-            return response()->file($file, [
+            return response()->download($file, 'template_import_siswa.xlsx', [
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition' => 'attachment; filename="template_import_siswa.xlsx"'
             ]);
         } else {
             return redirect()->route('siswa.index')->with('error', 'Template tidak ditemukan');
