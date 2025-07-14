@@ -21,6 +21,7 @@ class SiswaImport implements ToModel, WithHeadingRow
     {
         $nama = $row['nama'] ?? $row['nama_siswa'] ?? null;
         if (!$nama) return null; // skip baris tanpa nama
+        $kelas = \App\Models\Kelas::where('nama_kelas', $row['nama_kelas'])->first();
 
         $user = User::firstOrCreate(
             ['username' => $row['nis']],
@@ -35,7 +36,7 @@ class SiswaImport implements ToModel, WithHeadingRow
         return Siswa::firstOrCreate(
             ['user_id' => $user->id],
             [
-                'kelas_id' => $row['kelas_id'],
+                'kelas_id' => $kelas ? $kelas->id : null,
                 'nis' => $row['nis'],
                 'no_hp' => $row['no_hp'] ?? null,
             ]

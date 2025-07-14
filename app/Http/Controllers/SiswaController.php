@@ -19,16 +19,16 @@ class SiswaController extends Controller
         $query = Siswa::with(['user', 'kelas']);
         if ($request->filled('q')) {
             $q = $request->q;
-            $query->whereHas('user', function($u) use ($q) {
+            $query->whereHas('user', function ($u) use ($q) {
                 $u->where('nama', 'like', "%$q%")
-                  ->orWhere('username', 'like', "%$q%")
-                  ->orWhere('email', 'like', "%$q%") ;
+                    ->orWhere('username', 'like', "%$q%")
+                    ->orWhere('email', 'like', "%$q%");
             })
-            ->orWhereHas('kelas', function($k) use ($q) {
-                $k->where('nama_kelas', 'like', "%$q%") ;
-            })
-            ->orWhere('nis', 'like', "%$q%")
-            ->orWhere('no_hp', 'like', "%$q%") ;
+                ->orWhereHas('kelas', function ($k) use ($q) {
+                    $k->where('nama_kelas', 'like', "%$q%");
+                })
+                ->orWhere('nis', 'like', "%$q%")
+                ->orWhere('no_hp', 'like', "%$q%");
         }
         $siswas = $query->paginate(10); // pagination 10 per halaman
         return view('siswa.index', compact('siswas'));
@@ -130,15 +130,17 @@ class SiswaController extends Controller
     // Tambahkan method untuk download template import siswa (Excel/CSV)
     public function downloadTemplateSiswa()
     {
-        $file = public_path('template_import_siswa.xlsx');
+        $file = public_path('template_import_siswa_terbaru.xlsx');
+
         if (file_exists($file)) {
-            return response()->download($file, 'template_import_siswa.xlsx', [
+            return response()->download($file, 'template_import_siswa_terbaru.xlsx', [
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ]);
         } else {
             return redirect()->route('siswa.index')->with('error', 'Template tidak ditemukan');
         }
     }
+
 
     // Hapus banyak siswa sekaligus
     public function multiDelete(Request $request)

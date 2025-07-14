@@ -29,7 +29,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [CrudController::class, 'dashboard'])->name('dashboard');
     Route::resource('siswa', SiswaController::class);
     Route::post('siswa/import', [SiswaController::class, 'importExcel'])->name('siswa.import');
-    Route::get('/siswa/download-template', [SiswaController::class, 'downloadTemplateSiswa'])->name('siswa.downloadTemplate');
     Route::resource('guru', GuruController::class);
     Route::resource('kelas', KelasController::class);
     Route::get('nilai/massal', [NilaiController::class, 'massal'])->name('nilai.massal');

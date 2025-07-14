@@ -53,7 +53,7 @@
                                     <th>No HP</th>
                                     <th>Username</th>
                                     <th>Password Default</th>
-                                    <th>Nilai Akumulasi</th>
+                                    <!-- <th>Nilai Akumulasi</th> -->
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
@@ -68,10 +68,10 @@
                                     <td>{{ $siswa->no_hp ?? '-' }}</td>
                                     <td>{{ $siswa->nis }}</td>
                                     <td>{{ $siswa->nis }}MAN</td>
-                                    <td>
+                                    <!-- <td>
                                         {{-- Nilai Akumulasi --}}
                                         {{ method_exists($siswa, 'nilaiAkumulasi') ? number_format($siswa->nilaiAkumulasi(), 2) : '-' }}
-                                    </td>
+                                    </td> -->
                                     <td>
                                         <a href="{{ route('siswa.edit', $siswa->id) }}" class="btn btn-warning btn-sm">Edit</a>
                                         <form action="{{ route('siswa.destroy', $siswa->id) }}" method="POST" style="display:inline-block;">

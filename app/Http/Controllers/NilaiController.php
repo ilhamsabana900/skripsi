@@ -184,5 +184,5 @@ class NilaiController extends Controller
         $nilai->delete();
         return redirect()->route('nilai.index')->with('success', 'Nilai berhasil dihapus.');
     }
-    // ...existing code...
+   
 }
